@@ -1,4 +1,33 @@
 
+
+// ====== AVATAR 3D TILT ======
+(function(){
+  const wrap = $("#hero3d"), tilt = $("#avaTilt");
+  if(!wrap || !tilt) return;
+  let raf = null, tx=0, ty=0, cx=0, cy=0;
+  function loop(){
+    cx += (tx-cx)*.12; cy += (ty-cy)*.12;
+    tilt.style.transform = `rotateY(${cx}deg) rotateX(${cy}deg) translateZ(0)`;
+    if(Math.abs(tx-cx)>.01 || Math.abs(ty-cy)>.01) raf = requestAnimationFrame(loop);
+    else raf = null;
+  }
+  function onMove(e){
+    const r = wrap.getBoundingClientRect();
+    const px = (e.clientX - (r.left+r.width/2)) / (r.width/2);
+    const py = (e.clientY - (r.top+r.height/2)) / (r.height/2);
+    tx = Math.max(-1, Math.min(1, px)) * 22;
+    ty = Math.max(-1, Math.min(1, py)) * -14;
+    if(!raf) raf = requestAnimationFrame(loop);
+  }
+  // gerak di seluruh hero biar responsif
+  const hero = wrap.closest(".hero") || wrap;
+  hero.addEventListener("mousemove", onMove);
+  hero.addEventListener("mouseleave", ()=>{ tx=0; ty=0; if(!raf) raf=requestAnimationFrame(loop); });
+  // touch (mobile): pakai posisi sentuh
+  hero.addEventListener("touchmove", (e)=>{ if(e.touches[0]) onMove(e.touches[0]); }, {passive:true});
+  hero.addEventListener("touchend", ()=>{ tx=0; ty=0; if(!raf) raf=requestAnimationFrame(loop); });
+})();
+
 // ====== PUBLIC SITE ======
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
